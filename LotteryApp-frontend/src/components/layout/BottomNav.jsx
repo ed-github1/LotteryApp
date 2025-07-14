@@ -18,7 +18,7 @@ const navOptions = [
 const BottomNav = () => {
   const location = useLocation()
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-white border-t z-50 flex justify-around items-center py-2 shadow-lg sm:hidden">
+    <nav className="fixed bottom-0 left-0 w-full bg-transparent backdrop-blur-lg z-50 flex justify-around items-center py-2 shadow-lg sm:hidden">
       {navOptions.map(({ icon: Icon, label, to }) => {
         const active = location.pathname === to
         return (

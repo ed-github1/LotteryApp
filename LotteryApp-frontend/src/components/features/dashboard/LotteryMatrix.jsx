@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useTicket } from '../../../context/TicketContext'
 
@@ -40,7 +40,7 @@ const ProgressBar = ({ countrySelections }) => {
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div
-          className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+          className="bg-[#FFD700] h-2 rounded-full transition-all duration-300"
           style={{
             width: `${(selectedCount / countryConfigs.length) * 100}%`
           }}
@@ -54,12 +54,18 @@ const ProgressBar = ({ countrySelections }) => {
 const NumberSelectionGrid = ({
   selectedCountry,
   countrySelections,
-  handleNumberSelect
+  handleNumberSelect,
+  isModal = false,
+  onClose
 }) => {
   if (!selectedCountry) return null
 
-  return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mb-6">
+  const content = (
+    <div
+      className={`w-full max-w-md bg-white rounded-2xl shadow-lg p-6 ${
+        isModal ? '' : 'mb-6'
+      }`}
+    >
       <div className="text-center mb-4">
         <h3 className="text-lg font-bold text-gray-700 mb-2">
           Pick Your Lucky Number
@@ -86,7 +92,7 @@ const NumberSelectionGrid = ({
                 onClick={() => handleNumberSelect(number)}
                 className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-150 ${
                   selected
-                    ? 'bg-orange-500 text-white shadow-lg scale-110'
+                    ? 'bg-[#FFD700] text-white shadow-lg scale-110'
                     : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-orange-100 hover:border-orange-300'
                 }`}
               >
@@ -95,8 +101,29 @@ const NumberSelectionGrid = ({
             )
           })}
       </div>
+
+      {isModal && (
+        <div className="flex gap-2 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-xl bg-[#FFD700] text-gray-700 font-bold hover:bg-gray-300 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      )}
     </div>
   )
+
+  if (isModal) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="w-full max-w-md">{content}</div>
+      </div>
+    )
+  }
+
+  return content
 }
 
 // --- TicketCard Component ---
@@ -156,11 +183,11 @@ const TicketCard = ({ ticket, idx, onDelete }) => {
 // --- TicketSummary Component ---
 const TicketSummary = ({ tickets, handleDeleteTicket }) => {
   return (
-    <div className="w-full max-w-md mx-auto px-2 py-6">
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mb-6 border-l-4 border-yellow-400 relative">
       <div className="flex items-center justify-between mb-4">
         <div className="text-xl font-number">
           <strong className="font-number text-yell">
-            <span className='font-title tracking-wide'> Total:</span> $
+            <span className="font-title tracking-wide"> Total:</span> $
             {tickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0)}
           </strong>
         </div>
@@ -185,10 +212,14 @@ const TicketSummary = ({ tickets, handleDeleteTicket }) => {
 const LotteryMatrix = () => {
   const [selectedCountry, setSelectedCountry] = useState(null)
   const [countrySelections, setCountrySelections] = useState({})
+  const [showModal, setShowModal] = useState(false)
   const { tickets, addTicket, removeTicket } = useTicket()
 
   const handleCountrySelect = (country) => {
     setSelectedCountry(country)
+    if (!showModal) {
+      setShowModal(true)
+    }
   }
 
   const handleNumberSelect = (number) => {
@@ -197,6 +228,9 @@ const LotteryMatrix = () => {
         ...prev,
         [selectedCountry.code]: number
       }))
+      if (showModal) {
+        setShowModal(false)
+      }
     }
   }
 
@@ -229,15 +263,15 @@ const LotteryMatrix = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row justify-center  bg-[#FFF6ED] min-h-screen w-full">
+    <div className="flex flex-col-reverse lg:flex-row justify-center bg-[#FFF6ED] min-h-screen w-full">
       {/* Left: Selection UI */}
       <div className="flex flex-col items-center px-2 py-6 w-full max-w-md mx-auto">
         {/* Lottery Ticket Form */}
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mb-6 border-l-4 border-orange-400 relative">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mb-6 border-l-4 border-[#FFD700] relative">
           {/* Ticket Header */}
           <div className="text-center mb-6">
-            <h2 className="text-xl font-bold font-secondary text-orange-600 mb-2">
-              🎟️ LOTTERY TICKET
+            <h2 className="text-xl font-title tracking-wide text-[#FFD700] mb-2">
+              LOTTERY APP
             </h2>
             <p className="text-sm text-gray-600">
               Select one number for each country
@@ -249,7 +283,7 @@ const LotteryMatrix = () => {
             {countryConfigs.map((country) => (
               <div key={country.code} className="flex flex-col items-center">
                 {/* Flag */}
-                <div className="w-10 h-8 mb-2 flex items-center justify-center bg-gray-50 ">
+                <div className="w-10 h-8 mb-2 flex items-center justify-center bg-gray-50">
                   <img
                     src={country.flag}
                     alt={country.name}
@@ -266,10 +300,10 @@ const LotteryMatrix = () => {
                 <button
                   className={`w-12 h-12 rounded-full border-2 font-bold text-lg transition-all duration-200 ${
                     countrySelections[country.code]
-                      ? 'bg-orange-500 text-white border-orange-500 shadow-lg'
+                      ? 'bg-[#FFD700] text-white border-yellow-500 shadow-lg'
                       : selectedCountry?.code === country.code
-                      ? 'bg-orange-100 text-orange-600 border-orange-300 ring-2 ring-orange-200'
-                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-orange-50 hover:border-orange-200'
+                      ? 'bg-orange-100 text-yellow-600 border-yellow-300 ring-2 ring-orange-200'
+                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-yellow-50 hover:border-yellow-200'
                   }`}
                   onClick={() => handleCountrySelect(country)}
                 >
@@ -288,7 +322,7 @@ const LotteryMatrix = () => {
 
           {/* Selected Country Info */}
           {selectedCountry && (
-            <div className="bg-orange-50 rounded-lg p-3 mb-4 border border-orange-200">
+            <div className="bg-yellow-50 rounded-lg p-3 mb-4 border border-yellow-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <img
@@ -296,11 +330,11 @@ const LotteryMatrix = () => {
                     alt={selectedCountry.name}
                     className="h-5 w-auto mr-2"
                   />
-                  <span className="font-semibold text-orange-800">
+                  <span className="font-semibold text-yellow-800">
                     {selectedCountry.name}
                   </span>
                 </div>
-                <span className="text-sm text-orange-600">
+                <span className="text-sm text-yellow-600">
                   Pick 1-{selectedCountry.totalNumbers}
                 </span>
               </div>
@@ -315,7 +349,7 @@ const LotteryMatrix = () => {
               Object.keys(countrySelections).filter(
                 (key) => countrySelections[key]
               ).length > 0
-                ? 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow-xl'
+                ? 'bg-[#FFD700] text-white hover:bg-orange-600 hover:shadow-xl'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
             disabled={
@@ -337,25 +371,39 @@ const LotteryMatrix = () => {
             disabled={tickets.length === 0}
             onClick={() => alert(`Continue with ${tickets.length} Ticket(s)`)}
           >
-            🎯 Continue with {tickets.length} Ticket
+            🎯 Play With Other Ticket
             {tickets.length !== 1 ? 's' : ''}
           </button>
         </div>
       </div>
 
-      <div className="mr-10">
+      <div className="lg:mr-10">
         {/* Right: Ticket summary */}
         <TicketSummary
           tickets={tickets}
           handleDeleteTicket={handleDeleteTicket}
         />
-        {/* Number Selection Grid */}
+
+        {/* Number Selection Grid - Only show on desktop */}
+        {showModal && (
+          <NumberSelectionGrid
+            selectedCountry={selectedCountry}
+            countrySelections={countrySelections}
+            handleNumberSelect={handleNumberSelect}
+          />
+        )}
+      </div>
+
+      {/* Modal for mobile devices */}
+      {showModal && (
         <NumberSelectionGrid
           selectedCountry={selectedCountry}
           countrySelections={countrySelections}
           handleNumberSelect={handleNumberSelect}
+          isModal={true}
+          onClose={() => setShowModal(false)}
         />
-      </div>
+      )}
     </div>
   )
 }
