@@ -6,7 +6,7 @@ const DashboardLayout = () => {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 pb-20 ml-0 sm:ml-64">
+      <main className="flex-1 lg:h-[110vh] pb-20 ml-0 sm:ml-64">
         {/* Add sm:ml-64 for large screens */}
         <Outlet />
       </main>

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { registerUser, logIn } from '../services/authService'
+
 // Create the context
 const AuthContext = createContext()
 
@@ -61,6 +62,13 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const logout = () => {
+    setUser(null)
+    setAuthErrors([])
+    setMessage('')
+    window.localStorage.removeItem('loggedLotteryappUser')
+  }
+
   useEffect(() => {
     if (authErrors.length > 0) {
       const timer = setTimeout(() => {
@@ -72,7 +80,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ createUser, user, login, authErrors, message }}
+      value={{ createUser, user, login, logout, authErrors, message }}
     >
       {children}
     </AuthContext.Provider>

@@ -104,7 +104,8 @@ authRouter.post('/login', async (req, res) => {
   const passwordCorrect = await bcrypt.compare(password, user.passwordHash)
 
   if (!passwordCorrect) {
-    return res.status(401).json({ error: 'Wrong Credentials' })
+    return res.status
+    (401).json({ error: 'Wrong Credentials' })
   }
 
   const userForToken = {
@@ -117,7 +118,8 @@ authRouter.post('/login', async (req, res) => {
     token,
     username: user.username,
     email: user.email,
-    role: user.role
+    role: user.role,
+    user: user._id
   })
 })
 

@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { useTicket } from '../../../context/TicketContext'
+
+import TicketCard from '../dashboard/TicketCard'
+import ProgressBar from '../dashboard/ProgressBar'
+import TicketSummary from '../dashboard/TicketSummary'
 
 //flags-imgs
 import it from '../../../assets/country-flags/it.svg'
@@ -11,6 +14,8 @@ import kr from '../../../assets/country-flags/kr.svg'
 import ie from '../../../assets/country-flags/ie.svg'
 import gb from '../../../assets/country-flags/gb.svg'
 import fr from '../../../assets/country-flags/fr.svg'
+
+import OrderSummary from '../Payment/OrderSummary'
 
 const countryConfigs = [
   { code: 'IT', name: 'Italia', flag: it, totalNumbers: 90 },
@@ -24,31 +29,7 @@ const countryConfigs = [
 ]
 
 const MAX_TICKETS = 10
-
-// --- ProgressBar Component ---
-const ProgressBar = ({ countrySelections }) => {
-  const selectedCount = Object.keys(countrySelections).filter(
-    (key) => countrySelections[key]
-  ).length
-  return (
-    <div className="mb-4">
-      <div className="flex justify-between text-sm text-gray-600 mb-1">
-        <span>Progress</span>
-        <span>
-          {selectedCount}/{countryConfigs.length}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div
-          className="bg-[#FFD700] h-2 rounded-full transition-all duration-300"
-          style={{
-            width: `${(selectedCount / countryConfigs.length) * 100}%`
-          }}
-        ></div>
-      </div>
-    </div>
-  )
-}
+const TICKET_PRICE = 0.4
 
 // --- NumberSelectionGrid Component ---
 const NumberSelectionGrid = ({
@@ -56,18 +37,19 @@ const NumberSelectionGrid = ({
   countrySelections,
   handleNumberSelect,
   isModal = false,
-  onClose
+  onClose,
+  onRandomize
 }) => {
   if (!selectedCountry) return null
 
   const content = (
     <div
-      className={`w-full max-w-md bg-white rounded-2xl shadow-lg p-6 ${
+      className={`w-full max-w-md bg-white rounded-xl shadow-lg p-6 ${
         isModal ? '' : 'mb-6'
       }`}
     >
       <div className="text-center mb-4">
-        <h3 className="text-lg font-bold text-gray-700 mb-2">
+        <h3 className="text-lg font-secondary font-extrabold text-zinc-400 mb-2">
           Pick Your Lucky Number
         </h3>
         <div className="flex items-center justify-center">
@@ -76,11 +58,13 @@ const NumberSelectionGrid = ({
             alt={selectedCountry.name}
             className="h-6 w-auto mr-2"
           />
-          <span className="text-gray-600">{selectedCountry.name}</span>
+          <span className="text-gray-600 font-title">
+            {selectedCountry.name}
+          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-8 gap-2">
+      <div className="grid grid-cols-9 gap-x-2 gap-y-2.5">
         {Array(selectedCountry.totalNumbers)
           .fill(0)
           .map((_, i) => {
@@ -110,6 +94,12 @@ const NumberSelectionGrid = ({
           >
             Close
           </button>
+          <button
+            onClick={onRandomize}
+            className="flex-1 py-3 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600 transition-colors"
+          >
+            🎲
+          </button>
         </div>
       )}
     </div>
@@ -126,93 +116,12 @@ const NumberSelectionGrid = ({
   return content
 }
 
-// --- TicketCard Component ---
-const TicketCard = ({ ticket, idx, onDelete }) => {
-  const numbersArray = Array.isArray(ticket.numbers)
-    ? ticket.numbers
-    : [ticket.numbers]
-
-  return (
-    <div
-      className="relative flex items-center justify-between bg-white rounded-2xl shadow-md p-3 mb-4 border border-dashed border-yellow-300"
-      style={{
-        overflow: 'hidden',
-        minHeight: '64px',
-        background:
-          'repeating-linear-gradient(135deg, #fff, #fff 10px, #FFF9C4 10px, #FFF9C4 20px)'
-      }}
-    >
-      {/* Yellow Ticket Stub */}
-      <div className="absolute left-0 top-0 h-full w-4 bg-yellow-400 rounded-l-2xl flex flex-col items-center justify-center">
-        <span
-          className="text-[10px] text-white font-bold rotate-[-90deg] tracking-widest"
-          style={{ letterSpacing: '2px', fontFamily: 'monospace' }}
-        >
-          TICKET
-        </span>
-      </div>
-
-      {/* Ticket Numbers */}
-      <div className="flex gap-2 ml-8">
-        {numbersArray.map((num, i) => (
-          <span
-            key={i}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-yellow-100 text-yellow-800 font-extrabold text-lg border-2 border-yellow-300 tracking-wider shadow-sm"
-          >
-            {num}
-          </span>
-        ))}
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-col items-end ml-2">
-        <button
-          onClick={onDelete}
-          className="text-xs text-gray-400 hover:text-yellow-600 font-bold"
-        >
-          DELETE
-        </button>
-        <span className="text-[10px] text-yellow-600 font-semibold mt-1">
-          #{idx + 1}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-// --- TicketSummary Component ---
-const TicketSummary = ({ tickets, handleDeleteTicket }) => {
-  return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mb-6 border-l-4 border-yellow-400 relative">
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-xl font-number">
-          <strong className="font-number text-yell">
-            <span className="font-title tracking-wide"> Total:</span> $
-            {tickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0)}
-          </strong>
-        </div>
-        <span className="text-orange-500 font-title text-lg">
-          {tickets.length}/{MAX_TICKETS} Tickets
-        </span>
-      </div>
-      {/* Render tickets */}
-      {tickets.map((ticket, idx) => (
-        <TicketCard
-          key={idx}
-          ticket={ticket}
-          idx={idx}
-          onDelete={() => handleDeleteTicket(idx)}
-        />
-      ))}
-    </div>
-  )
-}
-
 // --- Main Component ---
 const LotteryMatrix = () => {
   const [selectedCountry, setSelectedCountry] = useState(null)
   const [countrySelections, setCountrySelections] = useState({})
   const [showModal, setShowModal] = useState(false)
+  const [showSummary, setShowSummary] = useState(false)
   const { tickets, addTicket, removeTicket } = useTicket()
 
   const handleCountrySelect = (country) => {
@@ -239,31 +148,42 @@ const LotteryMatrix = () => {
   }
 
   const handleSaveTicket = () => {
-    const selectedNumbers = Object.entries(countrySelections)
-      .filter(([_, number]) => number !== undefined)
-      .map(([countryCode, number]) => ({
-        country: countryConfigs.find((c) => c.code === countryCode),
-        number: number
-      }))
+    const selectedCount = Object.keys(countrySelections).filter(
+      (key) =>
+        countrySelections[key] !== undefined && countrySelections[key] !== null
+    ).length
 
-    if (selectedNumbers.length > 0) {
-      addTicket({
-        numbers: selectedNumbers.map((s) => s.number),
-        countries: selectedNumbers.map((s) => s.country),
-        price: selectedNumbers.length * 5
-      })
+    // Check if max tickets limit is reached
+    if (tickets.length >= MAX_TICKETS) {
+      alert(`Maximum ${MAX_TICKETS} tickets per purchase allowed!`)
+      return
+    }
+
+    if (selectedCount > 0) {
+      addTicket(countrySelections, selectedCount)
+      setCountrySelections({})
+      setSelectedCountry(null)
     }
   }
 
   const calculateTotal = () => {
     return (
       Object.keys(countrySelections).filter((key) => countrySelections[key])
-        .length * 5
+        .length * TICKET_PRICE
     )
   }
 
+  const handleRandomize = () => {
+    const randomSelections = {}
+    countryConfigs.forEach((country) => {
+      const randomNumber = Math.floor(Math.random() * country.totalNumbers) + 1
+      randomSelections[country.code] = randomNumber
+    })
+    setCountrySelections(randomSelections)
+  }
+
   return (
-    <div className="flex flex-col-reverse lg:flex-row justify-center bg-[#FFF6ED] min-h-screen w-full">
+    <div className="flex flex-col-reverse lg:flex-row bg-[#FFF6ED] min-h-screen w-full">
       {/* Left: Selection UI */}
       <div className="flex flex-col items-center px-2 py-6 w-full max-w-md mx-auto">
         {/* Lottery Ticket Form */}
@@ -296,13 +216,13 @@ const LotteryMatrix = () => {
                   {country.code}
                 </span>
 
-                {/* Number Circle */}
+                {/* Number ball*/}
                 <button
                   className={`w-12 h-12 rounded-full border-2 font-bold text-lg transition-all duration-200 ${
                     countrySelections[country.code]
-                      ? 'bg-[#FFD700] text-white border-yellow-500 shadow-lg'
+                      ? 'bg-[#FFD700] text-yellow-900 border-yellow-500 shadow-lg'
                       : selectedCountry?.code === country.code
-                      ? 'bg-orange-100 text-yellow-600 border-yellow-300 ring-2 ring-orange-200'
+                      ? 'bg-orange-100 text-yellow-900 bg-gradient-to-b from-yellow-400 to-yellow-500 border-2 border-yellow-600 '
                       : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-yellow-50 hover:border-yellow-200'
                   }`}
                   onClick={() => handleCountrySelect(country)}
@@ -318,7 +238,10 @@ const LotteryMatrix = () => {
             ))}
           </div>
 
-          <ProgressBar countrySelections={countrySelections} />
+          <ProgressBar
+            countryConfigs={countryConfigs}
+            countrySelections={countrySelections}
+          />
 
           {/* Selected Country Info */}
           {selectedCountry && (
@@ -344,56 +267,60 @@ const LotteryMatrix = () => {
 
         {/* Action Buttons */}
         <div className="w-full max-w-md space-y-3">
+          {/* Add tickets counter */}
+          <div className="text-center mb-2">
+            <span className="text-xs text-gray-600">
+              Tickets: {tickets.length}/{MAX_TICKETS}
+            </span>
+          </div>
           <button
-            className={`w-full py-4 rounded-2xl text-lg font-bold shadow-lg transition-all duration-200 ${
+            onClick={handleRandomize}
+            className="w-full py-3 rounded-2xl bg-blue-500 text-white font-bold shadow-md hover:bg-blue-600 transition-all duration-200"
+          >
+            🎲 Randomize Numbers
+          </button>
+          <button
+            className={`w-full py-3 rounded-2xl text-lg font-bold shadow-lg transition-all duration-200 ${
               Object.keys(countrySelections).filter(
                 (key) => countrySelections[key]
-              ).length > 0
+              ).length > 0 && tickets.length < MAX_TICKETS
                 ? 'bg-[#FFD700] text-white hover:bg-orange-600 hover:shadow-xl'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
             disabled={
               Object.keys(countrySelections).filter(
                 (key) => countrySelections[key]
-              ).length === 0
+              ).length === 0 || tickets.length >= MAX_TICKETS
             }
             onClick={handleSaveTicket}
           >
             💰 Save Ticket (${calculateTotal()})
+            {tickets.length >= MAX_TICKETS && `- Max ${MAX_TICKETS} reached`}
           </button>
+          <OrderSummary
+            open={showSummary}
+            onClose={() => setShowSummary(false)}
+          />
 
           <button
-            className={`w-full py-3 rounded-2xl text-md font-bold shadow transition-all duration-200 ${
-              tickets.length > 0
-                ? 'bg-green-500 text-white hover:bg-green-600'
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-            }`}
+            className="w-full py-3 rounded-2xl text-lg font-bold shadow-lg bg-green-500 text-white hover:bg-green-600 transition-all"
             disabled={tickets.length === 0}
-            onClick={() => alert(`Continue with ${tickets.length} Ticket(s)`)}
+            onClick={() => setShowSummary(true)}
           >
-            🎯 Play With Other Ticket
-            {tickets.length !== 1 ? 's' : ''}
+            Review Order
           </button>
         </div>
       </div>
-
+      {console.log('show summary', showSummary)}{' '}
       <div className="lg:mr-10">
         {/* Right: Ticket summary */}
+
         <TicketSummary
           tickets={tickets}
           handleDeleteTicket={handleDeleteTicket}
+          countryConfigs={countryConfigs}
         />
-
-        {/* Number Selection Grid - Only show on desktop */}
-        {showModal && (
-          <NumberSelectionGrid
-            selectedCountry={selectedCountry}
-            countrySelections={countrySelections}
-            handleNumberSelect={handleNumberSelect}
-          />
-        )}
       </div>
-
       {/* Modal for mobile devices */}
       {showModal && (
         <NumberSelectionGrid
@@ -402,6 +329,7 @@ const LotteryMatrix = () => {
           handleNumberSelect={handleNumberSelect}
           isModal={true}
           onClose={() => setShowModal(false)}
+          onRandomize={handleRandomize}
         />
       )}
     </div>

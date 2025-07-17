@@ -6,7 +6,6 @@ const UserContext = createContext()
 // Provider component
 export const UserProvider = ({ children }) => {
 
-  // Example login/logout functions
  
 
 
