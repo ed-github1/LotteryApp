@@ -57,7 +57,7 @@ export const TicketProvider = ({ children }) => {
   useEffect(() => {
     const fetchWinnerNumbers = async () => {
       try {
-        const response = await axios.get('/api/winner-number/display');
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/winner-number/display`);
         // Transform the response into an object with countryCode as keys
         const transformedData = response.data.reduce((acc, item) => {
           acc[item.countryCode] = item.winnerNumber;

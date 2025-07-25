@@ -7,7 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://lotteryapp.render.com',
+        target: 'https://lotteryapp-68gq.onrender.com',
+
         changeOrigin: true
       }
     }
