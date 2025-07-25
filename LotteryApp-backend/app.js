@@ -16,7 +16,7 @@ app.use(morgan('dev'))
 //
 app.use(
   cors({
-    origin: 'https://lotteryappuno.netlify.app',
+    origin: '*',
     credentials: true
   })
 )
