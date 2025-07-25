@@ -23,10 +23,6 @@ app.use('/api/users', usersRouter)
 app.use('/api/orders', ordersRouter)
 app.use('/api/winner-number', winnerNumberRouter)
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 export default app
 // This is the main application file for the Lottery App backend.
