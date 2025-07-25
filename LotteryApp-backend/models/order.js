@@ -1,18 +1,17 @@
 import mongoose from 'mongoose'
 
 const selectionSchema = new mongoose.Schema({
-  countryCode: { type: String, required: true },
-  number: { type: Number, required: true }
+  selections: { type: Map, of: Number, required: true } // Use a Map to store country codes as keys and numbers as values
 }, { _id: false })
 
 const ticketSchema = new mongoose.Schema({
-  selections: { type: [selectionSchema], required: true },
-  price: { type: Number, required: true }
+  selections: { type: Map, of: Number, required: true }, // Store country codes and numbers as a Map
+  price: { type: Number, required: true } // Add price if needed
 }, { _id: false })
 
 const orderSchema = new mongoose.Schema({
   tickets: { type: [ticketSchema], required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   total: { type: Number, required: true },
   date: { type: Date, default: Date.now }
 })

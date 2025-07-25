@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useTicket } from '../../../context/TicketContext'
 
-import TicketCard from '../dashboard/TicketCard'
-import ProgressBar from '../dashboard/ProgressBar'
-import TicketSummary from '../dashboard/TicketSummary'
+import ProgressBar from './ProgressBar'
+import TicketSummary from './TicketSummary'
 
 //flags-imgs
 import it from '../../../assets/country-flags/it.svg'
@@ -13,9 +12,11 @@ import nz from '../../../assets/country-flags/nz.svg'
 import kr from '../../../assets/country-flags/kr.svg'
 import ie from '../../../assets/country-flags/ie.svg'
 import gb from '../../../assets/country-flags/gb.svg'
-import fr from '../../../assets/country-flags/fr.svg'
+import fr from '../../../assets/country-flags/fr.png'
 
 import OrderSummary from '../Payment/OrderSummary'
+import NumberSelectionGrid from './NumberSelectionGrid'
+import CountriesGrid from '../game/CountriesGrid'
 
 const countryConfigs = [
   { code: 'IT', name: 'Italia', flag: it, totalNumbers: 90 },
@@ -25,96 +26,11 @@ const countryConfigs = [
   { code: 'KR', name: 'South Korea', flag: kr, totalNumbers: 45 },
   { code: 'IE', name: 'Ireland', flag: ie, totalNumbers: 47 },
   { code: 'UK', name: 'United Kingdom', flag: gb, totalNumbers: 59 },
-  { code: 'FR', name: 'France', flag: fr, totalNumbers: 10 }
+  { code: '➕', name: 'additional', flag: fr, totalNumbers: 10 }
 ]
 
 const MAX_TICKETS = 10
 const TICKET_PRICE = 0.4
-
-// --- NumberSelectionGrid Component ---
-const NumberSelectionGrid = ({
-  selectedCountry,
-  countrySelections,
-  handleNumberSelect,
-  isModal = false,
-  onClose,
-  onRandomize
-}) => {
-  if (!selectedCountry) return null
-
-  const content = (
-    <div
-      className={`w-full max-w-md bg-white rounded-xl shadow-lg p-6 ${
-        isModal ? '' : 'mb-6'
-      }`}
-    >
-      <div className="text-center mb-4">
-        <h3 className="text-lg font-secondary font-extrabold text-zinc-400 mb-2">
-          Pick Your Lucky Number
-        </h3>
-        <div className="flex items-center justify-center">
-          <img
-            src={selectedCountry.flag}
-            alt={selectedCountry.name}
-            className="h-6 w-auto mr-2"
-          />
-          <span className="text-gray-600 font-title">
-            {selectedCountry.name}
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-9 gap-x-2 gap-y-2.5">
-        {Array(selectedCountry.totalNumbers)
-          .fill(0)
-          .map((_, i) => {
-            const number = i + 1
-            const selected = countrySelections[selectedCountry.code] === number
-            return (
-              <button
-                key={number}
-                onClick={() => handleNumberSelect(number)}
-                className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-150 ${
-                  selected
-                    ? 'bg-[#FFD700] text-white shadow-lg scale-110'
-                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-orange-100 hover:border-orange-300'
-                }`}
-              >
-                {number}
-              </button>
-            )
-          })}
-      </div>
-
-      {isModal && (
-        <div className="flex gap-2 mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl bg-[#FFD700] text-gray-700 font-bold hover:bg-gray-300 transition-colors"
-          >
-            Close
-          </button>
-          <button
-            onClick={onRandomize}
-            className="flex-1 py-3 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600 transition-colors"
-          >
-            🎲
-          </button>
-        </div>
-      )}
-    </div>
-  )
-
-  if (isModal) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-        <div className="w-full max-w-md">{content}</div>
-      </div>
-    )
-  }
-
-  return content
-}
 
 // --- Main Component ---
 const LotteryMatrix = () => {
@@ -189,54 +105,28 @@ const LotteryMatrix = () => {
         {/* Lottery Ticket Form */}
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mb-6 border-l-4 border-[#FFD700] relative">
           {/* Ticket Header */}
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-title tracking-wide text-[#FFD700] mb-2">
-              LOTTERY APP
-            </h2>
-            <p className="text-sm text-gray-600">
-              Select one number for each country
+          <div className="flex flex-col items-center justify-center mb-4">
+            <div className="flex items-center space-x-1">
+              <img
+                src={fr}
+                alt="France"
+                className="size-12"
+              />
+              <h2 className="text-2xl font-bold font-title tracking-wide text-[#FFD700]">
+                LOTTERY APP
+              </h2>
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Select one number for each country to participate
             </p>
           </div>
 
-          {/* Countries Grid */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            {countryConfigs.map((country) => (
-              <div key={country.code} className="flex flex-col items-center">
-                {/* Flag */}
-                <div className="w-10 h-8 mb-2 flex items-center justify-center bg-gray-50">
-                  <img
-                    src={country.flag}
-                    alt={country.name}
-                    className="h-6 w-auto"
-                  />
-                </div>
-
-                {/* Country Code */}
-                <span className="text-xs font-semibold text-gray-600 mb-1">
-                  {country.code}
-                </span>
-
-                {/* Number ball*/}
-                <button
-                  className={`w-12 h-12 rounded-full border-2 font-bold text-lg transition-all duration-200 ${
-                    countrySelections[country.code]
-                      ? 'bg-[#FFD700] text-yellow-900 border-yellow-500 shadow-lg'
-                      : selectedCountry?.code === country.code
-                      ? 'bg-orange-100 text-yellow-900 bg-gradient-to-b from-yellow-400 to-yellow-500 border-2 border-yellow-600 '
-                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-yellow-50 hover:border-yellow-200'
-                  }`}
-                  onClick={() => handleCountrySelect(country)}
-                >
-                  {countrySelections[country.code] || '?'}
-                </button>
-
-                {/* Country Name */}
-                <span className="text-xs text-gray-500 mt-1 text-center leading-tight">
-                  {country.name.split(' ')[0]}
-                </span>
-              </div>
-            ))}
-          </div>
+          <CountriesGrid
+            countryConfigs={countryConfigs}
+            countrySelections={countrySelections}
+            selectedCountry={selectedCountry}
+            handleCountrySelect={handleCountrySelect}
+          />
 
           <ProgressBar
             countryConfigs={countryConfigs}
@@ -311,17 +201,15 @@ const LotteryMatrix = () => {
           </button>
         </div>
       </div>
-      {console.log('show summary', showSummary)}{' '}
       <div className="lg:mr-10">
-        {/* Right: Ticket summary */}
-
         <TicketSummary
           tickets={tickets}
           handleDeleteTicket={handleDeleteTicket}
           countryConfigs={countryConfigs}
         />
       </div>
-      {/* Modal for mobile devices */}
+
+      {/* Modal */}
       {showModal && (
         <NumberSelectionGrid
           selectedCountry={selectedCountry}

@@ -1,5 +1,5 @@
-import { SECRET } from './config.js '
 import jwt from 'jsonwebtoken'
+import { JWT_SECRET } from './config.js'
 import User from '../models/user.js'
 
 export const errorHandler = (error, res, next) => {
@@ -26,11 +26,22 @@ export const unkkwonEndpoint = (req, res) => {
 export const tokenExtractor = (req, res, next) => {
   const authorization = req.get('Authorization')
   if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    req.token = authorization.substring(7) // Extract the token
+    const token = authorization.substring(7)
+    try {
+      const decodedToken = jwt.verify(token, JWT_SECRET)
+      if (!decodedToken.id) {
+        return res.status(401).json({ message: 'Token invalid.' })
+      }
+      req.userId = decodedToken.id
+      next()
+    } catch (error) {
+      console.error('Token verification error:', error) // Log the error
+      return res.status(401).json({ message: 'Invalid token.' })
+    }
   } else {
-    req.token = null // No token provided
+    console.log('Token missing.') // Log missing token
+    return res.status(401).json({ message: 'Token missing.' })
   }
-  next()
 }
 
 export const userExtractor = async (req, res, next) => {
@@ -39,7 +50,7 @@ export const userExtractor = async (req, res, next) => {
       return res.status(401).json({ error: 'Token missing or invalid' })
     }
 
-    const decodedToken = jwt.verify(req.token, SECRET)
+    const decodedToken = jwt.verify(req.token, JWT_SECRET)
     if (!decodedToken.id) {
       return res.status(401).json({ error: 'Token invalid' })
     }

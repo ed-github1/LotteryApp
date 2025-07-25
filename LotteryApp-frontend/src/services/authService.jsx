@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const baseUrl = '/api/auth'
 
+
 export const registerUser = async (data) => {
   const res = await axios.post(`${baseUrl}/register`, data)
   return res.data

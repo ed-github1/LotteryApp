@@ -37,7 +37,7 @@ authRouter.post('/register', async (req, res) => {
     username,
     email,
     passwordHash,
-    role,
+    role: 'user',
     verified: false
   })
   await user.save()
@@ -96,31 +96,44 @@ authRouter.get('/verify-email', async (req, res) => {
 authRouter.post('/login', async (req, res) => {
   const { email, password } = req.body
   console.log('Login attempt:', email)
-  const user = await User.findOne({ email })
-  if (!user || !user.passwordHash) {
-    return res.status(401).json({ error: 'Wrong Credentials' })
+
+  try {
+    const user = await User.findOne({ email })
+    console.log('User found:', user)
+
+    if (!user || !user.passwordHash) {
+      console.log('User not found or password hash missing')
+      return res.status(401).json({ error: 'Wrong Credentials' })
+    }
+
+    console.log('Password hash:', user.passwordHash)
+    const passwordCorrect = await bcrypt.compare(password, user.passwordHash)
+    console.log('Password match:', passwordCorrect)
+
+    if (!passwordCorrect) {
+      console.log('Password incorrect')
+      return res.status(401).json({ error: 'Wrong Credentials' })
+    }
+
+    const userForToken = {
+      email: user.email,
+      id: user._id
+    }
+
+    const token = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '1d' })
+    console.log('Generated token:', token)
+
+    res.status(200).send({
+      token,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      user: user._id
+    })
+  } catch (error) {
+    console.error('Error during login:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
-
-  const passwordCorrect = await bcrypt.compare(password, user.passwordHash)
-
-  if (!passwordCorrect) {
-    return res.status
-    (401).json({ error: 'Wrong Credentials' })
-  }
-
-  const userForToken = {
-    email: user.email,
-    id: user._id
-  }
-
-  const token = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '1d' })
-  res.status(200).send({
-    token,
-    username: user.username,
-    email: user.email,
-    role: user.role,
-    user: user._id
-  })
 })
 
 export default authRouter

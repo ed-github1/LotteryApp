@@ -1,4 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import axios from 'axios';
+import it from '../assets/country-flags/it.svg';
+import ca from '../assets/country-flags/ca.svg';
+import mx from '../assets/country-flags/mx.svg';
+import nz from '../assets/country-flags/nz.svg';
+import kr from '../assets/country-flags/kr.svg';
+import ie from '../assets/country-flags/ie.svg';
+import gb from '../assets/country-flags/gb.svg';
+import fr from '../assets/country-flags/fr.png';
 
 const TicketContext = createContext()
 
@@ -42,6 +51,33 @@ export const TicketProvider = ({ children }) => {
   // Get total price
   const totalPrice = tickets.reduce((sum, t) => sum + t.price, 0)
 
+  const [winnerNumbers, setWinnerNumbers] = useState({});
+
+  // Fetch winner numbers from the backend
+  useEffect(() => {
+    const fetchWinnerNumbers = async () => {
+      try {
+        const response = await axios.get('/api/winner-number/display');
+        // Transform the response into an object with countryCode as keys
+        const transformedData = response.data.reduce((acc, item) => {
+          acc[item.countryCode] = item.winnerNumber;
+          return acc;
+        }, {});
+        setWinnerNumbers(transformedData);
+      } catch (error) {
+        console.error('Error fetching winner numbers:', error);
+      }
+    };
+
+    fetchWinnerNumbers();
+  }, []);
+
+  // Merge winner numbers with countryConfigs
+  const mergedCountryConfigs = countryConfigs.map((country) => ({
+    ...country,
+    winnerNumber: winnerNumbers[country.code] || null,
+  }));
+
   return (
     <TicketContext.Provider
       value={{
@@ -50,7 +86,8 @@ export const TicketProvider = ({ children }) => {
         removeTicket,
         totalPrice,
         ticketPrice: TICKET_PRICE,
-        formatPrice
+        formatPrice,
+        countryConfigs: mergedCountryConfigs, // Provide merged configs
       }}
     >
       {children}
@@ -60,3 +97,14 @@ export const TicketProvider = ({ children }) => {
 
 // Custom hook for easy access
 export const useTicket = () => useContext(TicketContext)
+
+export const countryConfigs = [
+  { code: 'IT', name: 'Italia', flag: it, totalNumbers: 90, winnerNumber: null },
+  { code: 'CA', name: 'Canada', flag: ca, totalNumbers: 49, winnerNumber: null },
+  { code: 'MX', name: 'Mexico', flag: mx, totalNumbers: 56, winnerNumber: null },
+  { code: 'NZ', name: 'New Zealand', flag: nz, totalNumbers: 40, winnerNumber: null },
+  { code: 'KR', name: 'South Korea', flag: kr, totalNumbers: 45, winnerNumber: null },
+  { code: 'IE', name: 'Ireland', flag: ie, totalNumbers: 47, winnerNumber: null },
+  { code: 'UK', name: 'United Kingdom', flag: gb, totalNumbers: 59, winnerNumber: null },
+  { code: 'FR', name: 'France', flag: fr, totalNumbers: 10, winnerNumber: null }
+];

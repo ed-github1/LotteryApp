@@ -1,4 +1,3 @@
-import React from 'react'
 import { useTicket } from '../../../context/TicketContext'
 import { useNavigate } from 'react-router-dom'
 import { sendOrder } from '../../../services/ordersService'
@@ -9,17 +8,35 @@ const OrderSummary = ({ open, onClose }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  console.log('user from useAuth:', user.user)
   if (!open) return null
 
   const handleProceed = async () => {
     try {
-      await sendOrder({
-        tickets,
-        total: totalPrice,
-        userId: user.user
+      // Format tickets for backend
+      const formattedTickets = tickets.map((ticket) => {
+        const backendSelections = ticket.selections.reduce((acc, sel) => {
+          // Extract countryCode and number directly from the object
+          const { countryCode, number } = sel
+          acc[(countryCode)] = number // Add to the backend object
+          return acc
+        }, {})
+
+        return {
+          selections: backendSelections, // Include selections
+          price: ticket.price // Include ticket price
+        }
       })
-      navigate('/Success')
+
+      // Log the data being sent to the backend
+      const payload = {
+        tickets: formattedTickets, // Send formatted tickets
+        total: parseFloat(totalPrice.toFixed(2)) // Round total to two decimal places
+      }
+
+      // Send formatted tickets to backend
+      await sendOrder(payload, user.token)
+
+      navigate('/dashboard/draws')
     } catch (err) {
       alert('Error processing order')
       console.log(err.message)
