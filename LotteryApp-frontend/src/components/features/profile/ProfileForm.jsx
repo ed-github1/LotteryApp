@@ -1,4 +1,7 @@
-import { BiPencil } from 'react-icons/bi'
+import FormInput from '../../common/FormInput'
+import InfoCard from '../../common/InfoCard'
+import ActionButtons from '../../common/ActionButtons'
+import StatusMessage from '../../common/StatusMessage'
 
 const ProfileForm = ({
   user,
@@ -14,131 +17,103 @@ const ProfileForm = ({
   apiError,
   success
 }) => (
-  <form onSubmit={handleSubmit(onSubmit)}>
-    <div className="flex-1">
-      <h2 className="text-2xl font-bold text-gray-800">
-        {editMode ? (
-          <input
-            {...register('firstName', { required: 'First name is required' })}
-            className={`border-b border-yellow-300 focus:outline-none px-1 py-2 w-full ${errors.firstName ? 'border-red-500' : ''}`}
-            aria-invalid={!!errors.firstName}
-            aria-label="First name"
-            autoComplete="given-name"
-            disabled={isSubmitting}
-          />
-        ) : (
-          user.firstName
-        )}
-      </h2>
-      {errors.firstName && (
-        <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>
-      )}
-      <p className="text-gray-500">
-        {editMode ? (
-          <input
-            {...register('lastName', { required: 'Last name is required' })}
-            className={`border-b border-yellow-300 focus:outline-none px-1 py-2 w-full ${errors.lastName ? 'border-red-500' : ''}`}
-            aria-invalid={!!errors.lastName}
-            aria-label="Last name"
-            autoComplete="family-name"
-            disabled={isSubmitting}
-          />
-        ) : (
-          user.lastName
-        )}
-      </p>
-      {errors.lastName && (
-        <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>
-      )}
+  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    {/* Name Section */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <InfoCard
+        label="First Name"
+        value={user.firstName}
+        editMode={editMode}
+        register={register}
+        name="firstName"
+        validation={{ required: 'First name is required' }}
+        error={errors.firstName}
+        disabled={isSubmitting}
+        autoComplete="given-name"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        }
+      />
+      
+      <InfoCard
+        label="Last Name"
+        value={user.lastName}
+        editMode={editMode}
+        register={register}
+        name="lastName"
+        validation={{ required: 'Last name is required' }}
+        error={errors.lastName}
+        disabled={isSubmitting}
+        autoComplete="family-name"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        }
+      />
     </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-      <div className="bg-gray-50 rounded-lg p-4 flex flex-col">
-        <span className="text-xs text-gray-500">Email</span>
-        <span className="font-semibold text-gray-800">
-          {editMode ? (
-            <input
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /^\S+@\S+$/i,
-                  message: 'Invalid email address'
-                }
-              })}
-              className={`border-b border-yellow-300 focus:outline-none px-1 py-2 w-full ${errors.email ? 'border-red-500' : ''}`}
-              aria-invalid={!!errors.email}
-              aria-label="Email"
-              autoComplete="email"
-              disabled={isSubmitting}
-            />
-          ) : (
-            user.email
-          )}
-        </span>
-        {errors.email && (
-          <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
-        )}
-      </div>
-      <div className="bg-gray-50 rounded-lg p-4 flex flex-col">
-        <span className="text-xs text-gray-500">Phone</span>
-        <span className="font-semibold text-gray-800 flex items-center gap-2">
-          {editMode ? (
-            <>
-              <input
-                {...register('phone', {
-                  required: 'Phone number is required',
-                  pattern: {
-                    value: /^\d{2} \d{2} \d{2} \d{2}$/,
-                    message: 'Invalid phone number'
-                  }
-                })}
-                className={`border-b border-yellow-300 focus:outline-none px-1 py-2 w-full ${errors.phone ? 'border-red-500' : ''}`}
-                aria-invalid={!!errors.phone}
-                aria-label="Phone number"
-                autoComplete="tel"
-                disabled={isSubmitting}
-              />
-              <BiPencil className="w-4 h-4 text-yellow-500" />
-            </>
-          ) : (
-            user.phone
-          )}
-        </span>
-        {errors.phone && (
-          <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
-        )}
-      </div>
+
+    {/* Contact Information */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <InfoCard
+        label="Email Address"
+        value={user.email}
+        editMode={editMode}
+        register={register}
+        name="email"
+        validation={{
+          required: 'Email is required',
+          pattern: {
+            value: /^\S+@\S+$/i,
+            message: 'Invalid email address'
+          }
+        }}
+        error={errors.email}
+        disabled={isSubmitting}
+        autoComplete="email"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        }
+      />
+      
+      <InfoCard
+        label="Phone Number"
+        value={user.phone}
+        editMode={editMode}
+        register={register}
+        name="phone"
+        validation={{
+          required: 'Phone number is required',
+          pattern: {
+            value: /^\d{2} \d{2} \d{2} \d{2}$/,
+            message: 'Invalid phone number format (XX XX XX XX)'
+          }
+        }}
+        error={errors.phone}
+        disabled={isSubmitting}
+        autoComplete="tel"
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+        }
+      />
     </div>
-    <div className="flex flex-col sm:flex-row gap-3 mt-4">
-      {editMode ? (
-        <>
-          <button
-            type="submit"
-            disabled={!isDirty || isSubmitting}
-            className="px-4 py-2 bg-yellow-400 text-black font-semibold rounded-lg shadow hover:bg-yellow-500 transition disabled:opacity-60"
-          >
-            {isSubmitting ? 'Saving...' : 'Save'}
-          </button>
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-        </>
-      ) : (
-        <button
-          type="button"
-          className="mt-4 sm:mt-0 px-4 py-2 bg-[#FFD700] text-black font-semibold rounded-lg shadow hover:bg-[#FFC300] transition"
-          onClick={handleEdit}
-        >
-          Edit Profile
-        </button>
-      )}
-    </div>
-    {apiError && <p className="text-red-500 text-xs mt-2">{apiError}</p>}
-    {success && <p className="text-green-600 text-xs mt-2">Profile updated successfully!</p>}
+
+    {/* Action Buttons */}
+    <ActionButtons
+      editMode={editMode}
+      isSubmitting={isSubmitting}
+      isDirty={isDirty}
+      onCancel={handleCancel}
+    />
+
+    {/* Status Messages */}
+    <StatusMessage apiError={apiError} success={success} />
   </form>
 )
 

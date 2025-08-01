@@ -26,7 +26,7 @@ const BottomNav = () => {
             key={to}
             to={to}
             className={`flex flex-col items-center text-xs font-semibold px-2 py-1 transition ${
-              active ? 'text-[#FFD700]' : 'text-gray-500'
+              active ? 'text-[#FFD700]' : 'text-white'
             }`}
             aria-label={label}
           >

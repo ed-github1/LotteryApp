@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // const baseUrl = '/api/orders'
-const baseUrl = `${import.meta.env.VITE_API_URL}/api/orders`;
+const baseUrl = `/api/orders`;
 
 
 
@@ -25,3 +25,9 @@ export const sendOrder = async (order, token) => {
   const res = await axios.post(baseUrl, order, config);
   return res.data;
 };
+
+
+export const getDrawSchedule = async () => {
+  const res = await axios.get(`${baseUrl}/draw-schedules`)
+  return res.data
+}

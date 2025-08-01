@@ -6,7 +6,8 @@ const selectionSchema = new mongoose.Schema({
 
 const ticketSchema = new mongoose.Schema({
   selections: { type: Map, of: Number, required: true }, // Store country codes and numbers as a Map
-  price: { type: Number, required: true } // Add price if needed
+  price: { type: Number, required: true }, // Add price if needed
+  drawDate: { type: Map, of: Date, required: true } // Map of country codes to draw dates
 }, { _id: false })
 
 const orderSchema = new mongoose.Schema({

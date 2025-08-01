@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { UserProvider } from './context/UsersContext'
 import { AuthProvider } from './context/AuthContext'
+import { LanguageProvider } from './context/LanguageContext'
 import Home from './components/pages/Home'
 import Register from './components/pages/Register'
 import Login from './components/pages/Login'
@@ -20,11 +21,12 @@ import Results from './components/pages/Results'
 const App = () => {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <UserProvider>
-          <TicketProvider>
-            <OrdersProvider>
-              <Routes>
+      <LanguageProvider>
+        <AuthProvider>
+          <UserProvider>
+            <TicketProvider>
+              <OrdersProvider>
+                <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="*" element={<NotFound />} />
@@ -48,6 +50,7 @@ const App = () => {
           </TicketProvider>
         </UserProvider>
       </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   )
 }

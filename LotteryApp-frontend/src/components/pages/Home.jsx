@@ -30,8 +30,6 @@ const Home = () => {
       </div>
       <div className="flex flex-col sm:flex-row bg-[#232946] relative justify-center items-center flex-wrap gap-4 p-4  z-20">
         <TicketCard />
-        <TicketCard />
-        <TicketCard />
       </div>
 
       <div className="w-full flex flex-col items-center justify-evenly bg-[#232946] text-white py-8 px-2 sm:px-4">

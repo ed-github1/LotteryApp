@@ -9,7 +9,7 @@ const CountriesGrid = ({
       {countryConfigs.map((country) => (
         <div key={country.code} className="flex flex-col items-center">
           {/* Flag */}
-          <div className="w-10 h-8 mb-2 flex items-center justify-center bg-gray-50">
+          <div className="w-10 h-8 mb-2 flex items-center justify-center ">
             <img src={country.flag} alt={country.name} className="h-6 w-auto" />
           </div>
 

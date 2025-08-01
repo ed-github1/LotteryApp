@@ -33,6 +33,8 @@ const OrderSummary = ({ open, onClose }) => {
         total: parseFloat(totalPrice.toFixed(2)) // Round total to two decimal places
       }
 
+      console.log(payload);
+
       // Send formatted tickets to backend
       await sendOrder(payload, user.token)
 
