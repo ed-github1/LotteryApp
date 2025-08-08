@@ -17,11 +17,11 @@ const transporter = nodemailer.createTransport({
 
 // Register user
 authRouter.post('/register', async (req, res) => {
-  const { username, email, password, role } = req.body
+  const { firstName, lastName, email, password, role } = req.body
 
   // Check if email or username already exists
   const existingUser = await User.findOne({
-    $or: [{ email }, { username }]
+    $or: [{ email }, { firstName }, { lastName }]
   })
   if (existingUser) {
     return res
@@ -34,18 +34,22 @@ authRouter.post('/register', async (req, res) => {
 
   // Save user as pending (not verified)
   const user = new User({
-    username,
+    firstName,
+    lastName,
     email,
     passwordHash,
     role: 'user',
     verified: false
   })
+
+  //Save User in DB
   await user.save()
 
   // Create verification email token with user id
   const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
     expiresIn: '1d'
   })
+
   const verificationLink = `http://localhost:5173/verify-email?token=${token}`
 
   const emailHTML = `
@@ -95,23 +99,18 @@ authRouter.get('/verify-email', async (req, res) => {
 
 authRouter.post('/login', async (req, res) => {
   const { email, password } = req.body
-  console.log('Login attempt:', email)
 
   try {
     const user = await User.findOne({ email })
-    console.log('User found:', user)
 
     if (!user || !user.passwordHash) {
       console.log('User not found or password hash missing')
       return res.status(401).json({ error: 'Wrong Credentials' })
     }
 
-    console.log('Password hash:', user.passwordHash)
     const passwordCorrect = await bcrypt.compare(password, user.passwordHash)
-    console.log('Password match:', passwordCorrect)
 
     if (!passwordCorrect) {
-      console.log('Password incorrect')
       return res.status(401).json({ error: 'Wrong Credentials' })
     }
 
@@ -121,14 +120,16 @@ authRouter.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(userForToken, JWT_SECRET, { expiresIn: '1d' })
-    console.log('Generated token:', token)
 
     res.status(200).send({
       token,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      user: user._id
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
+      }
     })
   } catch (error) {
     console.error('Error during login:', error)

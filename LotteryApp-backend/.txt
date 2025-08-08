@@ -1,0 +1,56 @@
+http.request_rate:
+Requests sent per second.
+Higher is better, but watch for errors as you increase.
+
+http.requests:
+Total number of requests sent during the test.
+
+http.responses:
+Total number of responses received.
+
+http.codes.2xx / 4xx / 5xx:
+Number of responses by status code.
+
+2xx = Success
+4xx = Client error (e.g., 429 Too Many Requests)
+5xx = Server error
+http.codes.429:
+Requests rejected due to rate limiting.
+If this is high, your rate limiter is blocking requests.
+
+http.response_time:
+How long it took to get a response (in milliseconds).
+
+min, max, mean, median, p95, p99
+p95 = 95% of requests were faster than this time.
+vusers.created:
+Number of virtual users started.
+
+vusers.completed:
+Number of virtual users that finished their scenario.
+
+vusers.failed:
+Number of virtual users that failed (usually due to errors).
+
+How to Use These Metrics
+Success:
+Most requests should be 2xx codes, with low response times.
+
+Errors:
+High 4xx or 5xx means your app is struggling.
+
+429 = Rate limiting (increase or disable for testing).
+500 = Server error (check logs).
+Performance:
+
+mean and median response times should be low (ideally < 200ms for API).
+p95 and p99 show worst-case response times.
+Capacity:
+If response times spike or errors increase as you add users, you’ve found your current limit.
+
+Summary:
+
+High 2xx, low response times = good.
+High 429 = rate limiter is blocking.
+High 5xx = server/database issues.
+Use p95/p99 to check for slow outliers.

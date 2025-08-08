@@ -30,7 +30,6 @@ winnerNumberRouter.get('/display', async (req, res) => {
   try {
     // Fetch all winner numbers from the database
     const winnerNumbers = await WinnerNumber.find();
-
     return res.status(200).json(winnerNumbers);
   } catch (error) {
     console.error('Error fetching winner numbers:', error);

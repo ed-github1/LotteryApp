@@ -13,7 +13,7 @@ import { getWinnerNumber } from '../services/ticketService'
 const TicketContext = createContext()
 
 // Set your ticket price here
-const TICKET_PRICE = 0.4
+const PRICE_PER_SELECTION = 0.4
 
 // Utilidad para mostrar siempre 2 enteros y 2 decimales
 const formatPrice = (value) => value.toFixed(2).padStart(5, '0')
@@ -47,9 +47,23 @@ export const TicketProvider = ({ children }) => {
         selections: Object.entries(countrySelections)
           .filter(([_, number]) => number !== undefined && number !== null)
           .map(([countryCode, number]) => ({ countryCode, number })),
-        price: Number(formatPrice(selectedCount * TICKET_PRICE)) // Formateado
+        // price is for display only; DO NOT send to backend
+        price: Number(formatPrice(selectedCount * PRICE_PER_SELECTION))
       }
     ])
+  }
+
+  // Helper: get secure payload for backend (only selections)
+  const getOrderPayload = () => {
+    return {
+      tickets: tickets.map(ticket => ({
+        selections: ticket.selections.reduce((acc, sel) => {
+          acc[sel.countryCode] = sel.number
+          return acc
+        }, {})
+      }))
+      // Do NOT include price or total here
+    }
   }
 
   // Remove a ticket by index
@@ -104,10 +118,12 @@ export const TicketProvider = ({ children }) => {
         tickets,
         addTicket,
         removeTicket,
+        PRICE_PER_SELECTION,
         totalPrice,
-        ticketPrice: TICKET_PRICE,
+        ticketPrice: PRICE_PER_SELECTION,
         formatPrice,
-        countryConfigs: mergedCountryConfigs // Provide merged configs
+        countryConfigs: mergedCountryConfigs, // Provide merged configs
+        getOrderPayload // Use this for secure backend submission
       }}
     >
       {children}

@@ -1,9 +1,9 @@
 const Footer = () => {
   return (
-    <footer className="w-full bg-[#232946] text-[#F5F5F5] py-6 h-44">
+    <footer className="w-full bg-zinc-800 text-[#F5F5F5] py-6 h-44">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4">
         <div className="text-lg font-title font-bold tracking-wide">
-          Lottery App
+          World Lottery
         </div>
         <div className="flex gap-6 text-sm">
           <a href="#" className="hover:text-[#FFD700] transition">Terms</a>

@@ -15,9 +15,8 @@ const InputField = ({
   <div className="relative w-full">
     <input
       type={type}
-      className={`w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FFD700] text-gray-900 ${
-        rightIcon ? 'pr-12' : ''
-      }`}
+      className={`w-full px-4 py-2 rounded-lg bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FFD700] text-gray-900 ${rightIcon ? 'pr-12' : ''
+        }`}
       placeholder={placeholder}
       {...registerProps}
     />
@@ -39,23 +38,26 @@ const InputField = ({
 const RegisterForm = () => {
   const { createUser, authErrors } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors }
   } = useForm()
 
   const onSubmit = handleSubmit(async (data) => {
-    // Trim whitespace from all fields
+    // Trim whitespace from all fields and exclude confirmPassword
     const sanitizedData = {
-      username: data.username.trim(),
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
       email: data.email.trim(),
       password: data.password.trim()
     }
-    console.log(sanitizedData)
     await createUser(sanitizedData)
+    console.log(sanitizedData);
     reset()
   })
 
@@ -71,20 +73,37 @@ const RegisterForm = () => {
         Join now for a chance to win amazing prizes!
       </p>
       <InputField
-        placeholder="username"
-        error={errors.username?.message}
-        registerProps={register('username', {
-          required: 'Please enter your name.',
+        placeholder="First name"
+        error={errors.firstname?.message}
+        registerProps={register('firstName', {
+          required: 'Please enter your first name.',
           minLength: {
             value: 2,
-            message: 'username must be at least 2 characters.'
+            message: 'first name  must be at least 2 characters.'
           },
           maxLength: {
             value: 50,
-            message: 'username must be less than 50 characters.'
+            message: 'first name must be less than 50 characters.'
           },
           validate: (value) =>
-            value.trim() !== '' || 'username cannot be empty.'
+            value.trim() !== '' || 'first name cannot be empty.'
+        })}
+      />
+      <InputField
+        placeholder="Last name"
+        error={errors.lastName?.message}
+        registerProps={register('lastName', {
+          required: 'Please enter your last name.',
+          minLength: {
+            value: 2,
+            message: 'Last name must be at least 2 characters.'
+          },
+          maxLength: {
+            value: 50,
+            message: 'Last name  must be less than 50 characters.'
+          },
+          validate: (value) =>
+            value.trim() !== '' || 'last name cannot be empty.'
         })}
       />
       <InputField
@@ -119,6 +138,18 @@ const RegisterForm = () => {
         })}
         rightIcon={showPassword ? <FaEyeSlash /> : <FaEye />}
         onRightIconClick={() => setShowPassword((prev) => !prev)}
+      />
+      <InputField
+        type={showConfirmPassword ? 'text' : 'password'}
+        placeholder="Confirm Password"
+        error={errors.confirmPassword?.message}
+        registerProps={register('confirmPassword', {
+          required: 'Please confirm your password.',
+          validate: (value) =>
+            value === watch('password') || 'Passwords do not match.'
+        })}
+        rightIcon={showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+        onRightIconClick={() => setShowConfirmPassword((prev) => !prev)}
       />
       <button
         type="submit"

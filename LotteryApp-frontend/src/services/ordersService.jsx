@@ -6,6 +6,10 @@ const baseUrl = `/api/orders`;
 
 
 export const getOrders = async (token) => {
+  if (!token || typeof token !== 'string' || token.length < 10) {
+    console.error('Invalid or missing JWT token:', token);
+    throw new Error('No valid token provided');
+  }
   const config = {
     headers: {
       Authorization: `Bearer ${token}`
@@ -16,6 +20,10 @@ export const getOrders = async (token) => {
 };
 
 export const sendOrder = async (order, token) => {
+  if (!token || typeof token !== 'string' || token.length < 10) {
+    console.error('Invalid or missing JWT token:', token);
+    throw new Error('No valid token provided');
+  }
   const config = {
     headers: {
       Authorization: `Bearer ${token}` // Include token in Authorization header

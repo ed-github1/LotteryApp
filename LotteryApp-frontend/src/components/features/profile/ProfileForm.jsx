@@ -17,7 +17,9 @@ const ProfileForm = ({
   apiError,
   success
 }) => (
+  
   <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+  {console.log('user from profile form', user)}
     {/* Name Section */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <InfoCard

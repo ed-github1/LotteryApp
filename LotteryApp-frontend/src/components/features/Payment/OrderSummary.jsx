@@ -1,108 +1,148 @@
+import { useState } from 'react'
 import { useTicket } from '../../../context/TicketContext'
 import { useNavigate } from 'react-router-dom'
 import { sendOrder } from '../../../services/ordersService'
 import { useAuth } from '../../../context/AuthContext'
+import { motion } from 'framer-motion'
+// ...existing imports...
+import { useEffect } from 'react';
+import PaymentProgressBar from './PaymentProgressBar'
 
-const OrderSummary = ({ open, onClose }) => {
-  const { tickets, totalPrice, formatPrice } = useTicket()
-  const { user } = useAuth()
+const OrderSummary = () => {
+  const { tickets, totalPrice, formatPrice, clearTickets } = useTicket()
+  const { token } = useAuth()
   const navigate = useNavigate()
-
-  if (!open) return null
+  const [simulating, setSimulating] = useState(false)
+  const [simSuccess, setSimSuccess] = useState(false)
+  const [step, setStep] = useState(1);
 
   const handleProceed = async () => {
-    try {
+    setSimulating(true)
+    setSimSuccess(false)
+    // Simulate Binance Pay delay
+    setTimeout(async () => {
+      setSimulating(false)
+      setSimSuccess(true)
       // Format tickets for backend
       const formattedTickets = tickets.map((ticket) => {
         const backendSelections = ticket.selections.reduce((acc, sel) => {
-          // Extract countryCode and number directly from the object
           const { countryCode, number } = sel
-          acc[(countryCode)] = number // Add to the backend object
+          acc[(countryCode)] = number
           return acc
         }, {})
-
         return {
-          selections: backendSelections, // Include selections
-          price: ticket.price // Include ticket price
+          selections: backendSelections,
+          price: ticket.price
         }
       })
 
-      // Log the data being sent to the backend
+
       const payload = {
-        tickets: formattedTickets, // Send formatted tickets
-        total: parseFloat(totalPrice.toFixed(2)) // Round total to two decimal places
+        token: token,
+        tickets: formattedTickets,
+        total: parseFloat(totalPrice.toFixed(2))
       }
 
-      console.log(payload);
 
-      // Send formatted tickets to backend
-      await sendOrder(payload, user.token)
-
-      navigate('/dashboard/draws')
-    } catch (err) {
-      alert('Error processing order')
-      console.log(err.message)
-    }
+      console.log('Simulated Binance Pay payload:', payload)
+      await sendOrder(payload, token)
+      if (clearTickets) clearTickets();
+      // Navigation will happen in useEffect after simSuccess is true
+    }, 2000) // 2 seconds
   }
+  // Navigate after tickets are cleared and payment is successful
+  useEffect(() => {
+    if (simSuccess) {
+      navigate('/Success');
+    }
+  }, [simSuccess, navigate]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full border border-gray-100 relative animate-fade-in">
-        <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          &times;
-        </button>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900 font-title">
-            Order Summary
-          </h2>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-800 py-8 px-2">
+      {/* Stepper/Progress Bar */}
+      <PaymentProgressBar currentStep={step} />
+      {/* Card */}
+      <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-8 border border-gray-200">
+        <h2 className="text-2xl font-extrabold text-gray-800 mb-1 text-center">Order Summary</h2>
+        <div className="text-gray-500 text-center mb-8">Confirm your ticket purchase details</div>
 
-        <div className="text-sm font-secondary font-bold mt-2 mb-3 text-gray-500">
-          Your selected tickets for this purchase
-        </div>
-        <div className="bg-gray-50 rounded-lg border border-gray-200 mb-6 p-4 max-h-60 overflow-y-auto">
-          {tickets.map((ticket, idx) => (
-            <div
-              key={idx}
-              className="flex justify-between items-center py-2 border-b last:border-b-0 border-gray-100"
-            >
-              <div>
-                <div className="font-semibold text-[8px] font-number text-gray-700">
-                  Ticket #{idx + 1}
+        {!simulating && (
+          <>
+            {/* Table-like summary */}
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 mb-6">
+              <div className="mb-4">
+                <div className="flex justify-between text-gray-600 text-sm mb-1">
+                  <span className="font-semibold">Number of Tickets</span>
+                  <span className="font-semibold">{tickets.length}</span>
                 </div>
-                <div className="gap-2 mt-1 text-xs text-gray-600">
-                  {ticket.selections.map((sel, i) => (
-                    <span key={i} className="px-2 py-1 rounded font-semibold">
-                      <span className="font-bold">{sel.number}</span>
-                    </span>
+              </div>
+              <div className="mb-4">
+                <div className="font-semibold text-gray-700 mb-2">Ticket Details:</div>
+                <div className="divide-y divide-gray-200">
+                  {tickets.map((ticket, idx) => (
+                    <div key={idx} className=" border border-dotted border-zinc-300 py-3 px-1 flex  sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="font-bold text-[10px] text-gray-800 mb-1">Ticket #{idx + 1}</div>
+                        <div className="flex flex-wrap gap-2 items-center ">
+                          {ticket.selections.map((sel, i) => (
+                            <div key={i} className="font-mono flex flex-col items-center  ">
+                              <span className="text-xs font-semibold">{sel.countryCode}</span>
+                              <span className="text-md font-bold font-mono text-gray-800 tracking-wider">{sel.number}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-              <div className="text-gray-700 font-bold text-xs font-number">
-                ${formatPrice(ticket.price)}
+              <div className="flex justify-between items-center bg-gray-100 rounded px-4 py-3 mt-4">
+                <span className="font-bold text-gray-700">Payment Amount</span>
+                <span className="font-extrabold text-xl text-gray-900">${formatPrice(totalPrice)}</span>
               </div>
             </div>
-          ))}
-        </div>
+            {/* Payment Button */}
+            <button
+              onClick={handleProceed}
+              className="w-full py-4 rounded-lg bg-yellow-400 text-white font-bold text-lg shadow hover:bg-blue-700 transition-all"
+              disabled={simulating || simSuccess}
+            >
+              {simulating ? 'Processing Binance Pay...' : simSuccess ? 'Payment Successful!' : 'Make Payment'}
+            </button>
+          </>
+        )}
+        {simulating && (
+          <div className="flex flex-col items-center justify-center h-80">
+            <motion.img
+              src="https://upload.wikimedia.org/wikipedia/commons/5/57/Binance_Logo.png"
+              alt="Binance Logo"
+              className="w-24 h-24 mb-6"
+              initial={{ scale: 1, rotate: 0 }}
+              animate={{ scale: [1, 1.2, 1], rotate: [0, 360, 0] }}
+              transition={{
+                repeat: Infinity,
+                duration: 2,
+                type: 'spring',
+                stiffness: 100,
+                damping: 10
+              }}
+            />
+            <motion.div
+              className="text-yellow-600 font-bold text-2xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 80 }}
+            >
+              Processing Binance Pay...
+            </motion.div>
+          </div>
+        )}
 
-        <div className="flex justify-between items-center font-bold text-xl mb-6">
-          <span className="text-green-600">Total</span>
-          <span className="text-green-600 font-number">
-            ${formatPrice(totalPrice)}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleProceed}
-            className="flex-1 py-3 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 transition-all text-center"
-          >
-            Proceed to Payment
-          </button>
-        </div>
+        {simSuccess && (
+          <div className="mt-8 text-center text-green-600 text-xl font-bold">
+            Payment successful! Your tickets have been purchased.
+          </div>
+        )}
       </div>
     </div>
   )

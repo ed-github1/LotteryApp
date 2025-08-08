@@ -2,11 +2,6 @@ import mongoose from 'mongoose'
 
 // Esquema del Usuario
 const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    unique: true,
-    required: true
-  },
   email: {
     required: true,
     unique: true,
@@ -16,7 +11,13 @@ const userSchema = new mongoose.Schema({
     required: true,
     type: String
   },
-  fullName: {
+  firstName: {
+    type: String
+  },
+  lastName: {
+    type: String
+  },
+  phoneNumber: {
     type: String
   },
   createdAt: {

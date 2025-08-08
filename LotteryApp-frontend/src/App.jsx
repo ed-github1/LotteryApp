@@ -11,12 +11,14 @@ import MyAccount from './components/features/profile/MyAccount'
 import Draws from './components/features/dashboard/Draws'
 import DashboardLayout from './components/layout/DashboardLayout'
 import NotFound from './components/pages/NotFound'
-import LotteryMatrix from './components/features/game/LotteryMatrix'
+import LotteryMatrix from './components/features/lottery/LotteryMatrix'
 import { TicketProvider } from './context/TicketContext'
 import Settings from './components/features/dashboard/Settings'
 import SuccessPayment from './components/features/Payment/SuccessPayment'
 import { OrdersProvider } from './context/OrdersContext'
-import Results from './components/pages/Results'
+import Results from './components/pages/dashboard/Results'
+import WinnerNumberUploadPage from './components/pages/WinnerNumberUploadPage'
+import OrderSummaryPage from './components/pages/OrderSummaryPage'
 
 const App = () => {
   return (
@@ -43,6 +45,8 @@ const App = () => {
                     <Route path="buy-ticket" element={<LotteryMatrix />} />
                     <Route path="results" element={<Results />} />
                     <Route path="Settings" element={<Settings />} />
+                    <Route path="upload-winner-number" element={<WinnerNumberUploadPage/>}  />
+                    <Route path="order-summary" element={<OrderSummaryPage />} />
                   </Route>
                 </Route>
               </Routes>

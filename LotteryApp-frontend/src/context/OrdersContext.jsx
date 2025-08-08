@@ -16,12 +16,37 @@ export const OrdersProvider = ({ children }) => {
     fetchDrawDates()
   }, [])
 
-  console.log('oders from context', orders);
 
   const fetchDrawDates = async () => {
     try {
       const drawData = await getDrawSchedule()
-      setDrawDates(drawData)
+      console.log('draws schedules', drawData);
+      // Transform: { IT: { day, hour, minute }, ... } => [{ countryCode, drawDate }, ...]
+      const now = new Date();
+      const drawDatesArr = Object.entries(drawData).map(([countryCode, { day, hour, minute }]) => {
+        // Find next occurrence of this weekday (1=Monday, 7=Sunday)
+        // JS: 0=Sunday, 1=Monday, ..., 6=Saturday
+        let targetDay = day;
+        if (targetDay === 7) targetDay = 0; // Map 7 (Sunday) to 0
+        const result = new Date(now);
+        const currentDay = result.getDay();
+        let daysToAdd = targetDay - currentDay;
+        // If today is the draw day but time has passed, or if draw day is before today, go to next week
+        if (daysToAdd < 0 || (daysToAdd === 0 && (result.getHours() > hour || (result.getHours() === hour && result.getMinutes() >= minute)))) {
+          daysToAdd += 7;
+        }
+        result.setDate(result.getDate() + daysToAdd);
+        result.setHours(hour, minute, 0, 0);
+        return { countryCode, drawDate: result.toISOString(), local: result.toLocaleString() };
+      });
+      // Debug: log all draw dates with local time
+      console.log('All calculated draw dates:', drawDatesArr);
+      // Find the absolute soonest future draw
+      const soonestDraw = drawDatesArr.reduce((min, curr) => {
+        return new Date(curr.drawDate) < new Date(min.drawDate) ? curr : min;
+      }, drawDatesArr[0]);
+      console.log('Soonest draw:', soonestDraw);
+      setDrawDates(drawDatesArr);
     } catch (error) {
       console.error('Error fetching draw dates:', error)
       setDrawDates([])

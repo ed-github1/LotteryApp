@@ -22,9 +22,9 @@ const Register = () => {
         onClose={() => setShowNotif(false)}
         message={message}
       />
-      <div className="flex lg:flex-row h-screen  bg-[#232946]">
-       <div className='w-full flex items-center justify-center inset-0 px-8 lg:w-2/5'>
-        <RegisterForm />
+      <div className="flex lg:flex-row h-screen  bg-zinc-800">
+        <div className='w-full flex items-center justify-center inset-0 px-8 lg:w-2/5'>
+          <RegisterForm />
         </div>
         <div className='hidden lg:w-3/5 lg:block w-full'>
           <Slider />

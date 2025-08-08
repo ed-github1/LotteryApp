@@ -17,11 +17,17 @@ export const AuthProvider = ({ children }) => {
   const [authErrors, setAuthErrors] = useState([])
   const [message, setMessage] = useState('')
   const [user, setUser] = useState(null)
+  const [token, setToken] = useState(() => window.localStorage.getItem('loggedLotteryappToken') || null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('loggedLotteryappUser');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+    }
+    // Sync token from localStorage on mount
+    const storedToken = localStorage.getItem('loggedLotteryappToken');
+    if (storedToken) {
+      setToken(storedToken);
     }
   }, [])
 
@@ -44,14 +50,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const userData = await logIn(credentials) // Await the async call
-      console.log('login called with:', credentials)
-
-      setUser(userData)
+      const res = await logIn(credentials) // Await the async call
+      setUser(res.user)
       window.localStorage.setItem(
         'loggedLotteryappUser',
-        JSON.stringify(userData)
+        JSON.stringify(res.user)
       )
+      // Store token separately
+      if (res.token) {
+        window.localStorage.setItem('loggedLotteryappToken', res.token);
+        setToken(res.token);
+      }
       setAuthErrors([])
     } catch (error) {
       const backendMsg =
@@ -67,6 +76,8 @@ export const AuthProvider = ({ children }) => {
     setAuthErrors([])
     setMessage('')
     window.localStorage.removeItem('loggedLotteryappUser')
+    window.localStorage.removeItem('loggedLotteryappToken')
+    setToken(null)
   }
 
   useEffect(() => {
@@ -80,7 +91,15 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ createUser, user, login, logout, authErrors, message }}
+      value={{
+        createUser,
+        user,
+        login,
+        logout,
+        authErrors,
+        message,
+        token
+      }}
     >
       {children}
     </AuthContext.Provider>
